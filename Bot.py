@@ -1,11 +1,16 @@
 ﻿import discord
 from discord.ext import commands
-import
+import json
+import os
 
 # intents = discord.Intents.default()
 # intents.members = True
 intents = discord.Intents.all()
- 
+with open('setting.json','r',encoding='utf8') as jFile:
+    jdata = json.load(jFile)
+
+
+
 bot = commands.Bot(command_prefix="!",intents = intents)
 
 @bot.event
@@ -13,24 +18,28 @@ async def on_ready():
     print("Bot is online")
 
 
-@bot.event
-async def on_member_join(member):
-    channel = bot.get_channel(899185079329357865)
-    await channel.send(F'{member} join!')
-
-@bot.event
-async def on_member_remove(member):
-    channel = bot.get_channel(899185079329357865)
-    await channel.send(F'{member} leave!')
+@bot.command()
+async def load(ctx,extension):
+    bot.load_extension(F'cmds.{extension}')
+    await ctx.send(F'Loaded {extension} done')
 
 @bot.command()
-async def ping(ctx):
-    await ctx.send(F'延遲時間:{bot.latency*1000:.3f} ms')
+async def unload(ctx,extension):
+    bot.unload_extension(F'cmds.{extension}')
+    await ctx.send(F'Un-Loaded {extension} done')
+
+@bot.command()
+async def reload(ctx,extension):
+    bot.reload_extension(F'cmds.{extension}')
+    await ctx.send(F'Re-Loaded {extension} done')
 
 
+for fileName in os.listdir('./cmds'):
+    if fileName.endswith('.py'):
+        bot.load_extension(F'cmds.{fileName[:-3]}')  #.py
+
+if __name__ == "__main__":
+    bot.run(jdata["TOKEN"])
     
-bot.run("ODk5MTgxOTE2OTc5MzYzODUx.YWvCaw.wO3gg9ooTY38zvrtnhVmht3nWbc")
-   
 
-#  @bot.event
-# async def Funcname(parameter_list):
+   
